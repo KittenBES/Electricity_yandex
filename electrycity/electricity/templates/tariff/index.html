@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}
+  Список тарифов
+{% endblock %}
+{% block content %}
+  {% for tariff in page_obj %}
+    <article class="mb-5">
+      {% include "includes/tariff_card.html" %}
+    </article>
+  {% endfor %}
+  {% include "includes/paginator.html" %}
+{% endblock %}

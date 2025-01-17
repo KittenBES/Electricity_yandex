@@ -1,0 +1,39 @@
+<div class="col d-flex justify-content-center">
+    <div class="card" style="width: 40rem;">
+      <div class="card-body">
+        <h5 class="card-title">{{ tariff.name }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">
+          <small>
+            Метод оплаты:
+            {% if tariff.payment_method == 'per_kwh' %}
+              Цена за кВтч
+            {% elif tariff.payment_method == 'fixed' %}
+              Фиксированный платеж
+            {% elif tariff.payment_method == 'complex' %}
+              Сложный тариф
+            {% endif %}
+          </small>
+        </h6>
+        <p class="card-text">{{ tariff.description }}</p>
+        {% if tariff.payment_method == 'per_kwh' and tariff.price_per_kwh %}
+        <p class="card-text">
+            <strong>Цена за кВтч:</strong> {{ tariff.price_per_kwh }} руб.
+        </p>
+        {% endif %}
+        {% if tariff.payment_method == 'fixed' and tariff.fixed_payment %}
+        <p class="card-text">
+            <strong>Фиксированный платеж:</strong> {{ tariff.fixed_payment }} руб.
+        </p>
+        {% endif %}
+        {% if tariff.payment_method == 'complex' %}
+            <p class="card-text">
+              {% if tariff.price_per_kwh %}
+                <strong>Цена за кВтч:</strong> {{ tariff.price_per_kwh }} руб.
+              {% endif %}
+              {% if tariff.fixed_payment %}
+                <br><strong>Фиксированный платеж:</strong> {{ tariff.fixed_payment }} руб.
+              {% endif %}
+            </p>
+        {% endif %}
+    </div>
+  </div>

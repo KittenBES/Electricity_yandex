@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}
+  Страница пользователя {{ profile.username }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="mb-5 text-center">Страница пользователя {{ profile.username }}</h1>
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <ul class="list-group list-group-horizontal-md justify-content-center mb-3">
+        <li class="list-group-item text-center">
+          <span class="fw-bold">Имя пользователя:</span> {% if profile.get_full_name %}{{ profile.get_full_name }}{% else %}не указано{% endif %}
+        </li>
+        <li class="list-group-item text-center">
+          <span class="fw-bold">Регистрация:</span> {{ profile.date_joined|date:"d.m.Y" }}
+        </li>
+        <li class="list-group-item text-center">
+          <span class="fw-bold">Роль:</span> {% if profile.is_staff %}<span class="badge bg-danger">Админ</span>{% else %}<span class="badge bg-secondary">Пользователь</span>{% endif %}
+        </li>
+      </ul>
+      {% if client %}
+      <ul class="list-group list-group-horizontal-md justify-content-center mb-3">
+        <li class="list-group-item text-center">
+          <span class="fw-bold">Тип клиента:</span> {{ client.get_client_type_display }}
+        </li>
+        <li class="list-group-item text-center">
+          <span class="fw-bold">Тариф:</span> {{ client.tariff }}
+        </li>
+        <li class="list-group-item text-center">
+          <span class="fw-bold">Номер договора:</span> {{ client.contract_number }}
+        </li>
+      </ul>
+      {% endif %}
+      <div class="d-flex justify-content-center mb-4">
+        {% if user.is_authenticated and request.user == profile %}
+        <a class="btn btn-primary me-2" href="{% url 'tariff:edit_profile' %}">Редактировать профиль</a>
+        <a class="btn btn-secondary me-2" href="{% url 'password_change' %}">Изменить пароль</a>
+        <a class="btn btn-success" href="{% url 'tariff:create_payment_request' %}">Создать заявку на оплату</a>
+        {% endif %}
+      </div>
+      <h3 class="mb-3 text-center">Заявки на оплату</h3>
+      {% for payment_request in payment_requests %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><span class="fw-bold">Показания счетчика:</span> {{ payment_request.meter_reading }}</li>
+            <li class="list-group-item"><span class="fw-bold">Дата заявки:</span> {{ payment_request.request_date|date:"d.m.Y" }}</li>
+            <li class="list-group-item"><span class="fw-bold">Дата оплаты:</span> {{ payment_request.payment_due_date|date:"d.m.Y" }}</li>
+            <li class="list-group-item"><span class="fw-bold">Сумма к оплате:</span> {{ payment_request.amount_due }}</li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <span class="fw-bold">Статус:</span>
+                {% if payment_request.is_paid %}
+                  <span class="badge bg-success">Оплачено</span>
+                {% elif payment_request.is_overdue %}
+                  <span class="badge bg-danger">Просрочено</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">Не оплачено</span>
+                {% endif %}
+              </div>
+              {% if user.is_authenticated and request.user == profile and not payment_request.is_paid %}
+              <form method="post" action="{% url 'tariff:mark_payment_request_paid' payment_request.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-success">Оплачено</button>
+              </form>
+              {% endif %}
+            </li>
+          </ul>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-center">У пользователя нет заявок на оплату.</p>
+      {% endfor %}
+      {% include "includes/paginator.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}
